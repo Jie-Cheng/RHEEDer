@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>images/normal-size.png</file>
+        <file>images/translate.png</file>
+        <file>images/zoom-in.png</file>
+        <file>images/zoom-out.png</file>
+        <file>images/line.png</file>
+        <file>images/rectangle.png</file>
+        <file>images/sector.png</file>
+        <file>images/RHEEDer.png</file>
+    </qresource>
+</RCC>
