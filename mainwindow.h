@@ -29,16 +29,12 @@ public slots:
     void zoomOut();
     void normalSize();
     void about();
-    void drawLine();
-    void drawRectangle();
-    void drawSector();
     void onPixelUnderCursorChanged(QPoint point);
 
 private:
     void createActions();
     void updateActions();
     bool saveFile(const QString &fileName);
-    void updateViewDrawMode();
 
     Ui::MainWindow *ui;
 

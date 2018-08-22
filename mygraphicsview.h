@@ -21,7 +21,8 @@ class MyGraphicsView : public QGraphicsView
     Q_OBJECT
 
 public:
-    enum DrawMode {Normal, DrawLine, DrawRectangle, DrawSector};
+    enum ViewMode {Normal, Pan, Line, Rectangle, Sector};
+
     explicit MyGraphicsView(QWidget *parent = nullptr);
     ~MyGraphicsView() override;
     void setImage(const QImage &newImage);
@@ -29,9 +30,7 @@ public:
     bool isImageNull() const;
     void gentleZoom(double factor);
     void normalSize();
-    void toggleDragMode();
-    void setDrawMode(DrawMode mode);
-
+    void setViewMode(ViewMode mode);
 signals:
     void pixelUnderCursorChanged(QPoint value);
 
@@ -46,6 +45,7 @@ private:
     QImage image;
     QGraphicsPixmapItem *pixmapItem;
 
+    ViewMode mode;
     /**
      * These variables are used to enable "gentle zoom"
      */
@@ -60,14 +60,12 @@ private:
      * the same thing with middle button pressed (but doesn't need to enter
      * a mode).
      */
-    bool pan;
-    bool panMode;
     QPoint panStart;
+    bool pan = false;
 
     /**
      * Draw line, rectangle, sector
      */
-    DrawMode drawMode;
     /* Starting point of a line or the centerline of a rectangle. or center of a sector. */
     std::shared_ptr<QPointF> firstPoint = nullptr;
     /* End point of a line or the centerline of a rectangle or an arbitrary point at the

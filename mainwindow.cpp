@@ -87,64 +87,43 @@ void MainWindow::createActions()
     normalSizeAct->setShortcut(tr("Ctrl+N"));
     normalSizeAct->setEnabled(false);
     viewMenu->addSeparator();
-    translateAct = viewMenu->addAction(tr("&Translate"), view, &MyGraphicsView::toggleDragMode);
+    translateAct = viewMenu->addAction(tr("&Translate"));
     translateAct->setEnabled(false);
     translateAct->setCheckable(true);
     translateAct->setShortcut(tr("Ctrl+T"));
+    connect(translateAct, &QAction::triggered, [=](const bool &state){
+        updateActions();
+        translateAct->setChecked(state);
+        view->setViewMode(state ? MyGraphicsView::ViewMode::Pan : MyGraphicsView::ViewMode::Normal);
+    });
 
     QMenu *toolMenu = menuBar()->addMenu(tr("&Tools"));
-    drawLineAct = toolMenu->addAction(tr("Select &Line"), this, &MainWindow::drawLine);
+    drawLineAct = toolMenu->addAction(tr("Select &Line"));
     drawLineAct->setEnabled(false);
     drawLineAct->setCheckable(true);
-    drawRectangleAct = toolMenu->addAction(tr("Select &Rectangle"), this, &MainWindow::drawRectangle);
+    connect(drawLineAct, &QAction::triggered, [=](const bool &state){
+        updateActions();
+        drawLineAct->setChecked(state);
+        view->setViewMode(state ? MyGraphicsView::ViewMode::Line : MyGraphicsView::ViewMode::Normal);
+    });
+
+    drawRectangleAct = toolMenu->addAction(tr("Select &Rectangle"));
     drawRectangleAct->setEnabled(false);
     drawRectangleAct->setCheckable(true);
-    drawSectorAct = toolMenu->addAction(tr("Select &Sector"), this, &MainWindow::drawSector);
+    connect(drawRectangleAct, &QAction::triggered, [=](const bool &state){
+        updateActions();
+        drawRectangleAct->setChecked(state);
+        view->setViewMode(state ? MyGraphicsView::ViewMode::Rectangle : MyGraphicsView::ViewMode::Normal);
+    });
+
+    drawSectorAct = toolMenu->addAction(tr("Select &Sector"));
     drawSectorAct->setEnabled(false);
     drawSectorAct->setCheckable(true);
-    // Make sure only zero or one action among drawLineAct, drawRectangleAct and drawSectorAct is checked.
-    // Also uncheck translateAct when we are drawing
-    // Note that an exclusive QActionGroup won't work as it requires exactly one action to be checked.
-    connect(drawLineAct, &QAction::triggered, [=](const bool &state){
-        if (state) {
-            drawRectangleAct->setChecked(false);
-            drawSectorAct->setChecked(false);
-            if (translateAct->isChecked()) {
-                translateAct->setChecked(false);
-                view->toggleDragMode();
-            }
-        }
-    });
-    connect(drawRectangleAct, &QAction::triggered, [=](const bool &state){
-        if (state) {
-            drawLineAct->setChecked(false);
-            drawSectorAct->setChecked(false);
-            if (translateAct->isChecked()) {
-                translateAct->setChecked(false);
-                view->toggleDragMode();
-            }
-        }
-    });
     connect(drawSectorAct, &QAction::triggered, [=](const bool &state){
-        if (state) {
-            drawRectangleAct->setChecked(false);
-            drawLineAct->setChecked(false);
-            if (translateAct->isChecked()) {
-                translateAct->setChecked(false);
-                view->toggleDragMode();
-            }
-        }
+        updateActions();
+        drawSectorAct->setChecked(state);
+        view->setViewMode(state ? MyGraphicsView::ViewMode::Sector : MyGraphicsView::ViewMode::Normal);
     });
-    // Disable the drawing actions when enter translation mode
-    connect(translateAct, &QAction::triggered, this, [=](){if (translateAct->isChecked()) {
-            drawLineAct->setChecked(false);
-            drawRectangleAct->setChecked(false);
-            drawSectorAct->setChecked(false);
-        };});
-    // Update the draw mode in view
-    connect(drawLineAct, &QAction::triggered, this, &MainWindow::updateViewDrawMode);
-    connect(drawRectangleAct, &QAction::triggered, this, &MainWindow::updateViewDrawMode);
-    connect(drawSectorAct, &QAction::triggered, this, &MainWindow::updateViewDrawMode);
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
     helpMenu->addAction(tr("&About"), this, &MainWindow::about);
@@ -192,9 +171,13 @@ void MainWindow::updateActions()
     zoomOutAct->setEnabled(view && !view->isImageNull());
     normalSizeAct->setEnabled(view && !view->isImageNull());
     translateAct->setEnabled(view && !view->isImageNull());
+    translateAct->setChecked(false);
     drawLineAct->setEnabled(view && !view->isImageNull());
+    drawLineAct->setChecked(false);
     drawRectangleAct->setEnabled(view && !view->isImageNull());
+    drawRectangleAct->setChecked(false);
     drawSectorAct->setEnabled(view && !view->isImageNull());
+    drawSectorAct->setChecked(false);
 }
 
 void MainWindow::changeWorkingDirectory()
@@ -210,7 +193,7 @@ void MainWindow::open()
 {
     QString fileName = QFileDialog::getOpenFileName(this,
         tr("Open image"), QDir::currentPath(),
-        tr("Images (*.png *.xpm *.jpg *.tiff *.svg *.bmp *.gif *.ppm)"));
+        tr("Images (*.png *.xpm *.jpg *.jpeg *.tiff *.svg *.bmp *.gif *.ppm)"));
     if (fileName.isEmpty()) {
         return;
     }
@@ -269,32 +252,4 @@ void MainWindow::onPixelUnderCursorChanged(QPoint point)
                 arg(QString::number(point.x()), QString::number(point.y()));
     }
     statusBar()->showMessage(message);
-}
-
-void MainWindow::drawLine()
-{
-}
-
-void MainWindow::drawRectangle()
-{
-}
-
-void MainWindow::drawSector()
-{
-}
-
-void MainWindow::updateViewDrawMode()
-{
-    if (!view) return;
-    if (!drawLineAct->isChecked() && !drawRectangleAct->isChecked() && !drawSectorAct->isChecked()) {
-        view->setDrawMode(MyGraphicsView::Normal);
-    } else if (drawLineAct->isChecked() && !drawRectangleAct->isChecked() && !drawSectorAct->isChecked()) {
-        view->setDrawMode(MyGraphicsView::DrawLine);
-    } else if (drawRectangleAct->isChecked() && !drawLineAct->isChecked() && !drawSectorAct->isChecked())  {
-        view->setDrawMode(MyGraphicsView::DrawRectangle);
-    } else if (drawSectorAct->isChecked() && !drawLineAct->isChecked() && !drawRectangleAct->isChecked())  {
-        view->setDrawMode(MyGraphicsView::DrawSector);
-    } else {
-        qDebug() << "More than one draw action are enabled at the same time!";
-    }
 }

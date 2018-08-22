@@ -11,11 +11,9 @@
 MyGraphicsView::MyGraphicsView(QWidget *parent) :
     QGraphicsView(parent),
     ui(new Ui::MyGraphicsView),
+    mode(ViewMode::Normal),
     zoomFactor(1.0),
-    zoomFactorBase(1.0015),
-    pan(false),
-    panMode(false),
-    drawMode(DrawMode::Normal)
+    zoomFactorBase(1.0015)
 {
     ui->setupUi(this);
     setMouseTracking(true);
@@ -77,7 +75,7 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *event)
     }
     emit pixelUnderCursorChanged(targetScenePos.toPoint());
 
-    if (drawMode == DrawMode::DrawLine && firstPoint && !secondPoint) {
+    if (mode == ViewMode::Line && firstPoint && !secondPoint) {
         QLineF line(*firstPoint, targetScenePos);
         if (!itemToDraw) {
             itemToDraw = std::make_shared<QGraphicsLineItem>();
@@ -94,7 +92,7 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *event)
             if (pixmapItem->boundingRect().contains(targetScenePos))
                 lineToDraw->setLine(line);
         }
-    } else if (drawMode == DrawMode::DrawRectangle && firstPoint && !secondPoint) {
+    } else if (mode == ViewMode::Rectangle && firstPoint && !secondPoint) {
         QVector<QPointF> vertices;
         QPointF tmp = targetScenePos - *firstPoint;
         double dx = 1, dy = 0;
@@ -123,7 +121,7 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *event)
             if (pixmapItem->boundingRect().contains(targetScenePos))
                 rectToDraw->setPolygon(poly);
         }
-    } else if (drawMode == DrawMode::DrawSector && firstPoint && !secondPoint) {
+    } else if (mode == ViewMode::Sector && firstPoint && !secondPoint) {
         double radius = sqrt(qPow(targetScenePos.x() - firstPoint->x(), 2) +
                              qPow(targetScenePos.y() - firstPoint->y(), 2));
         QPainterPath path = createRing(*firstPoint, radius, width, theta, phi);
@@ -156,16 +154,17 @@ void MyGraphicsView::wheelEvent(QWheelEvent *event)
 
 void MyGraphicsView::mousePressEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::MiddleButton || (panMode && event->button() == Qt::LeftButton)) {
+    if (event->button() == Qt::MiddleButton || (mode == ViewMode::Pan && event->button() == Qt::LeftButton)) {
         pan = true;
         panStart = event->pos();
         setCursor(Qt::ClosedHandCursor);
         event->accept();
         return;
-    } else if (drawMode != DrawMode::Normal && event->button() == Qt::LeftButton) {
+    } else if ((mode == ViewMode::Line || mode == ViewMode::Rectangle || mode == ViewMode::Sector) &&
+               event->button() == Qt::LeftButton) {
         if (secondPoint) {
             // clear the existing item
-            setDrawMode(drawMode);
+            setViewMode(mode);
         }
         if (!firstPoint) {
             if (scene()->sceneRect().contains(mapToScene(event->pos())))
@@ -177,12 +176,12 @@ void MyGraphicsView::mousePressEvent(QMouseEvent *event)
 
 void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::MiddleButton || (panMode && event->button() == Qt::LeftButton)) {
+    if (event->button() == Qt::MiddleButton || (mode == ViewMode::Pan && event->button() == Qt::LeftButton)) {
         pan = false;
         setCursor(Qt::ArrowCursor);
         event->accept();
         return;
-    } else if (drawMode != DrawMode::Normal) {
+    } else if (mode == ViewMode::Line || mode == ViewMode::Rectangle || mode == ViewMode::Sector) {
         if (firstPoint) {
             secondPoint = std::make_shared<QPointF>(mapToScene(event->pos()));
         }
@@ -190,20 +189,10 @@ void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     event->ignore();
 }
 
-void MyGraphicsView::toggleDragMode()
+void MyGraphicsView::setViewMode(ViewMode mode)
 {
-    panMode = !panMode;
-    if (panMode) {
-        setCursor(Qt::ClosedHandCursor);
-    } else {
-        setCursor(Qt::ArrowCursor);
-    }
-}
-
-void MyGraphicsView::setDrawMode(DrawMode mode)
-{
-    drawMode = mode;
-    if (mode != DrawMode::Normal) {
+    this->mode = mode;
+    if (mode == ViewMode::Line || mode == ViewMode::Rectangle || mode == ViewMode::Sector) {
         firstPoint = nullptr;
         secondPoint = nullptr;
         if (itemToDraw) {
