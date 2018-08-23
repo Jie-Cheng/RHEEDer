@@ -26,15 +26,20 @@ CONFIG += c++11
 SOURCES += \
         main.cpp \
         mainwindow.cpp \
-    mygraphicsview.cpp
+    mygraphicsview.cpp \
+    mytreeview.cpp \
+    selectioncontrol.cpp
 
 HEADERS += \
         mainwindow.h \
-    mygraphicsview.h
+    mygraphicsview.h \
+    mytreeview.h \
+    selectioncontrol.h
 
 FORMS += \
         mainwindow.ui \
-    mygraphicsview.ui
+    mygraphicsview.ui \
+    selectioncontrol.ui
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

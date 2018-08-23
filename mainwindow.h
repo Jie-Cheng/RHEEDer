@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QDir>
 #include "mygraphicsview.h"
+#include "mytreeview.h"
+#include "selectioncontrol.h"
 
 class MyGraphicsView;
 
@@ -39,6 +41,8 @@ private:
     Ui::MainWindow *ui;
 
     MyGraphicsView *view;
+    MyTreeView *tree;
+    SelectionControl *selection;
 
     QAction *openAct;
     QAction *exitAct;

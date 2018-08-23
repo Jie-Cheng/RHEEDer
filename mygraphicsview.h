@@ -31,8 +31,14 @@ public:
     void gentleZoom(double factor);
     void normalSize();
     void setViewMode(ViewMode mode);
-signals:
-    void pixelUnderCursorChanged(QPoint value);
+
+public slots:
+    void onFirstPointChange(QPoint);
+    void onSecondPointChange(QPoint);
+    void onWidthChange(int);
+    void onRadiusChange(int);
+    void onThetaChange(int);
+    void onPhiChange(int);
 
 private:
     void mousePressEvent(QMouseEvent *event) override;
@@ -71,6 +77,8 @@ private:
     /* End point of a line or the centerline of a rectangle or an arbitrary point at the
      * centerline of a ring. */
     std::shared_ptr<QPointF> secondPoint = nullptr;
+    /* Radius of ring */
+    int radius = 50;
     /* Width of a rectangle or a ring */
     int width = 20;
     /* angle between the centerline of the section and the vertical direction,
@@ -83,7 +91,10 @@ private:
     static QPainterPath createRing(QPointF center, double radius, double width, double theta, double phi);
 
 signals:
+    void pixelUnderCursorChanged(QPoint value);
     void zoomed();
+    void firstPointChanged(QPoint);
+    void secondPointChanged(QPoint);
 };
 
 #endif // MYGRAPHICSVIEW_H

@@ -9,6 +9,7 @@
 #include <QScreen>
 #include <QFileDialog>
 #include <QStandardPaths>
+#include <QSplitter>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -16,13 +17,29 @@ MainWindow::MainWindow(QWidget *parent) :
     view(new MyGraphicsView)
 {
     ui->setupUi(this);
-    view->setVisible(false);
-    setCentralWidget(view);
-    createActions();
-    resize(QGuiApplication::primaryScreen()->availableSize() * 3 / 5);
-    setWindowTitle("RHEEDer");
     QDir::setCurrent(QStandardPaths::standardLocations(QStandardPaths::PicturesLocation).last());
+    // Construct the TreeView after directory is set
+    tree = new MyTreeView;
+
+    QSplitter *splitter = new QSplitter;
+    splitter->addWidget(view);
+    view->setVisible(true);
+
+    QSplitter *splitter2 = new QSplitter;
+    splitter2->setOrientation(Qt::Vertical);
+    splitter2->addWidget(tree);
+    selection = new SelectionControl;
+    splitter2->addWidget(selection);
+
+    splitter->addWidget(splitter2);
+    splitter->setSizes({6000, 2000});
+    setCentralWidget(splitter);
+
+    createActions();
+    resize(QGuiApplication::primaryScreen()->availableSize());
+    setWindowTitle("RHEEDer");
     connect(view, &MyGraphicsView::pixelUnderCursorChanged, this, &MainWindow::onPixelUnderCursorChanged);
+    connect(tree, &MyTreeView::fileDoubleClicked, this, &MainWindow::loadFile);
 }
 
 MainWindow::~MainWindow()
@@ -43,6 +60,7 @@ bool MainWindow::loadFile(const QString &fileName)
     }
     view->setImage(newImage);
     updateActions();
+    tree->setFileName(fileName);
     return true;
 }
 

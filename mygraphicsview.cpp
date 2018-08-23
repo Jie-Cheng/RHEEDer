@@ -122,9 +122,9 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *event)
                 rectToDraw->setPolygon(poly);
         }
     } else if (mode == ViewMode::Sector && firstPoint && !secondPoint) {
-        double radius = sqrt(qPow(targetScenePos.x() - firstPoint->x(), 2) +
+        double r = sqrt(qPow(targetScenePos.x() - firstPoint->x(), 2) +
                              qPow(targetScenePos.y() - firstPoint->y(), 2));
-        QPainterPath path = createRing(*firstPoint, radius, width, theta, phi);
+        QPainterPath path = createRing(*firstPoint, r, width, theta, phi);
         if (!itemToDraw) {
             itemToDraw = std::make_shared<QGraphicsPathItem>();
             auto ringToDraw = std::dynamic_pointer_cast<QGraphicsPathItem>(itemToDraw);
@@ -167,8 +167,10 @@ void MyGraphicsView::mousePressEvent(QMouseEvent *event)
             setViewMode(mode);
         }
         if (!firstPoint) {
-            if (scene()->sceneRect().contains(mapToScene(event->pos())))
+            if (scene()->sceneRect().contains(mapToScene(event->pos()))) {
                 firstPoint = std::make_shared<QPointF>(mapToScene(event->pos()));
+                emit firstPointChanged(firstPoint->toPoint());
+            }
         }
     }
     event->ignore();
@@ -184,6 +186,7 @@ void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event)
     } else if (mode == ViewMode::Line || mode == ViewMode::Rectangle || mode == ViewMode::Sector) {
         if (firstPoint) {
             secondPoint = std::make_shared<QPointF>(mapToScene(event->pos()));
+            emit secondPointChanged(secondPoint->toPoint());
         }
     }
     event->ignore();
@@ -219,4 +222,34 @@ QPainterPath MyGraphicsView::createRing(QPointF center, double radius, double wi
     path.moveTo(QPointF(center.x() + radius * cos(alpha), center.y() - radius * sin(alpha)));
     path.arcTo(middle, static_cast<int>(theta-phi/2-90), static_cast<int>(phi));
     return path;
+}
+
+void MyGraphicsView::onFirstPointChange(QPoint newPoint)
+{
+   firstPoint = std::make_shared<QPointF>(newPoint.x(), newPoint.y());
+}
+
+void MyGraphicsView::onSecondPointChange(QPoint newPoint)
+{
+   secondPoint = std::make_shared<QPointF>(newPoint.x(), newPoint.y());
+}
+
+void MyGraphicsView::onWidthChange(int newWidth)
+{
+   width = newWidth;
+}
+
+void MyGraphicsView::onRadiusChange(int newRadius)
+{
+   radius = newRadius;
+}
+
+void MyGraphicsView::onThetaChange(int newTheta)
+{
+   theta = newTheta;
+}
+
+void MyGraphicsView::onPhiChange(int newPhi)
+{
+    phi = newPhi;
 }
