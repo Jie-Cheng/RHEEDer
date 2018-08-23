@@ -7,10 +7,7 @@ SelectionControl::SelectionControl(QWidget *parent) :
     ui(new Ui::SelectionControl)
 {
     ui->setupUi(this);
-    QHBoxLayout *layout = new QHBoxLayout;
-    layout->addLayout(ui->gridLayout);
-    layout->addStretch();
-    setLayout(layout);
+    setLayout(ui->horizontalLayout);
 }
 
 SelectionControl::~SelectionControl()

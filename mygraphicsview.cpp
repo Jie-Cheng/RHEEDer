@@ -75,69 +75,58 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *event)
     }
     emit pixelUnderCursorChanged(targetScenePos.toPoint());
 
-    if (mode == ViewMode::Line && firstPoint && !secondPoint) {
-        QLineF line(*firstPoint, targetScenePos);
-        if (!itemToDraw) {
-            itemToDraw = std::make_shared<QGraphicsLineItem>();
-            auto lineToDraw = std::dynamic_pointer_cast<QGraphicsLineItem>(itemToDraw);
-            lineToDraw->setPen(QPen(Qt::green, 1, Qt::SolidLine));
-            lineToDraw->setLine(line);
-            if (pixmapItem->boundingRect().contains(targetScenePos))
-                scene()->addItem(lineToDraw.get());
-            else {
-                itemToDraw = nullptr;
-            }
-        } else {
-            auto lineToDraw = std::dynamic_pointer_cast<QGraphicsLineItem>(itemToDraw);
-            if (pixmapItem->boundingRect().contains(targetScenePos))
+    if (event->buttons() == Qt::LeftButton && pixmapItem && pixmapItem->boundingRect().contains(targetScenePos)) {
+        if (mode == ViewMode::Line) {
+            QLineF line(firstPoint, targetScenePos);
+            if (!itemToDraw) {
+                itemToDraw = std::make_shared<QGraphicsLineItem>();
+                auto lineToDraw = std::dynamic_pointer_cast<QGraphicsLineItem>(itemToDraw);
+                lineToDraw->setPen(QPen(Qt::green, 1, Qt::SolidLine));
                 lineToDraw->setLine(line);
-        }
-    } else if (mode == ViewMode::Rectangle && firstPoint && !secondPoint) {
-        QVector<QPointF> vertices;
-        QPointF tmp = targetScenePos - *firstPoint;
-        double dx = 1, dy = 0;
-        if (abs(tmp.x()) > 1e-6) {
-            // not vertical
-            double k = -tmp.y() / tmp.x();
-            dy = sqrt(1.0/(1 + k * k));
-            dx = k * dy;
-        }
-        vertices.push_back(QPointF(firstPoint->x() + width/2 * dx, firstPoint->y() + width/2 * dy));
-        vertices.push_back(QPointF(targetScenePos.x() + width/2 * dx, targetScenePos.y() + width/2 * dy));
-        vertices.push_back(QPointF(targetScenePos.x() - width/2 * dx, targetScenePos.y() - width/2 * dy));
-        vertices.push_back(QPointF(firstPoint->x() - width/2 * dx, firstPoint->y() - width/2 * dy));
-        QPolygonF poly(vertices);
-        if (!itemToDraw) {
-            itemToDraw = std::make_shared<QGraphicsPolygonItem>();
-            auto rectToDraw = std::dynamic_pointer_cast<QGraphicsPolygonItem>(itemToDraw);
-            rectToDraw->setPen(QPen(Qt::green, 1, Qt::SolidLine));
-            rectToDraw->setPolygon(poly);
-            if (pixmapItem->boundingRect().contains(targetScenePos))
-                scene()->addItem(rectToDraw.get());
-            else
-                itemToDraw = nullptr;
-        } else {
-            auto rectToDraw = std::dynamic_pointer_cast<QGraphicsPolygonItem>(itemToDraw);
-            if (pixmapItem->boundingRect().contains(targetScenePos))
+                scene()->addItem(lineToDraw.get());
+            } else {
+                auto lineToDraw = std::dynamic_pointer_cast<QGraphicsLineItem>(itemToDraw);
+                lineToDraw->setLine(line);
+            }
+        } else if (mode == ViewMode::Rectangle) {
+            QVector<QPointF> vertices;
+            QPointF tmp = targetScenePos - firstPoint;
+            double dx = 1, dy = 0;
+            if (abs(tmp.x()) > 1e-6) {
+                // not vertical
+                double k = -tmp.y() / tmp.x();
+                dy = sqrt(1.0/(1 + k * k));
+                dx = k * dy;
+            }
+            vertices.push_back(QPointF(firstPoint.x() + width/2 * dx, firstPoint.y() + width/2 * dy));
+            vertices.push_back(QPointF(targetScenePos.x() + width/2 * dx, targetScenePos.y() + width/2 * dy));
+            vertices.push_back(QPointF(targetScenePos.x() - width/2 * dx, targetScenePos.y() - width/2 * dy));
+            vertices.push_back(QPointF(firstPoint.x() - width/2 * dx, firstPoint.y() - width/2 * dy));
+            QPolygonF poly(vertices);
+            if (!itemToDraw) {
+                itemToDraw = std::make_shared<QGraphicsPolygonItem>();
+                auto rectToDraw = std::dynamic_pointer_cast<QGraphicsPolygonItem>(itemToDraw);
+                rectToDraw->setPen(QPen(Qt::green, 1, Qt::SolidLine));
                 rectToDraw->setPolygon(poly);
-        }
-    } else if (mode == ViewMode::Sector && firstPoint && !secondPoint) {
-        double r = sqrt(qPow(targetScenePos.x() - firstPoint->x(), 2) +
-                             qPow(targetScenePos.y() - firstPoint->y(), 2));
-        QPainterPath path = createRing(*firstPoint, r, width, theta, phi);
-        if (!itemToDraw) {
-            itemToDraw = std::make_shared<QGraphicsPathItem>();
-            auto ringToDraw = std::dynamic_pointer_cast<QGraphicsPathItem>(itemToDraw);
-            ringToDraw->setPen(QPen(Qt::green, 1, Qt::SolidLine));
-            ringToDraw->setPath(path);
-            if (pixmapItem->boundingRect().contains(targetScenePos))
-                scene()->addItem(ringToDraw.get());
-            else
-                itemToDraw = nullptr;
-        } else {
-            auto ringToDraw = std::dynamic_pointer_cast<QGraphicsPathItem>(itemToDraw);
-            if (pixmapItem->boundingRect().contains(targetScenePos))
+                scene()->addItem(rectToDraw.get());
+            } else {
+                auto rectToDraw = std::dynamic_pointer_cast<QGraphicsPolygonItem>(itemToDraw);
+                rectToDraw->setPolygon(poly);
+            }
+        } else if (mode == ViewMode::Sector) {
+            double r = sqrt(qPow(targetScenePos.x() - firstPoint.x(), 2) +
+                            qPow(targetScenePos.y() - firstPoint.y(), 2));
+            QPainterPath path = createRing(firstPoint, r, width, theta, phi);
+            if (!itemToDraw) {
+                itemToDraw = std::make_shared<QGraphicsPathItem>();
+                auto ringToDraw = std::dynamic_pointer_cast<QGraphicsPathItem>(itemToDraw);
+                ringToDraw->setPen(QPen(Qt::green, 1, Qt::SolidLine));
                 ringToDraw->setPath(path);
+                scene()->addItem(ringToDraw.get());
+            } else {
+                auto ringToDraw = std::dynamic_pointer_cast<QGraphicsPathItem>(itemToDraw);
+                ringToDraw->setPath(path);
+            }
         }
     }
 }
@@ -162,15 +151,14 @@ void MyGraphicsView::mousePressEvent(QMouseEvent *event)
         return;
     } else if ((mode == ViewMode::Line || mode == ViewMode::Rectangle || mode == ViewMode::Sector) &&
                event->button() == Qt::LeftButton) {
-        if (secondPoint) {
+        if (itemToDraw) {
             // clear the existing item
-            setViewMode(mode);
+            scene()->removeItem(itemToDraw.get());
+            itemToDraw = nullptr;
         }
-        if (!firstPoint) {
-            if (scene()->sceneRect().contains(mapToScene(event->pos()))) {
-                firstPoint = std::make_shared<QPointF>(mapToScene(event->pos()));
-                emit firstPointChanged(firstPoint->toPoint());
-            }
+        if (scene()->sceneRect().contains(mapToScene(event->pos()))) {
+            firstPoint = mapToScene(event->pos()).toPoint();
+            emit firstPointChanged(firstPoint);
         }
     }
     event->ignore();
@@ -184,10 +172,7 @@ void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event)
         event->accept();
         return;
     } else if (mode == ViewMode::Line || mode == ViewMode::Rectangle || mode == ViewMode::Sector) {
-        if (firstPoint) {
-            secondPoint = std::make_shared<QPointF>(mapToScene(event->pos()));
-            emit secondPointChanged(secondPoint->toPoint());
-        }
+        // do nothing
     }
     event->ignore();
 }
@@ -196,8 +181,6 @@ void MyGraphicsView::setViewMode(ViewMode mode)
 {
     this->mode = mode;
     if (mode == ViewMode::Line || mode == ViewMode::Rectangle || mode == ViewMode::Sector) {
-        firstPoint = nullptr;
-        secondPoint = nullptr;
         if (itemToDraw) {
             scene()->removeItem(itemToDraw.get());
             itemToDraw = nullptr;
@@ -226,12 +209,12 @@ QPainterPath MyGraphicsView::createRing(QPointF center, double radius, double wi
 
 void MyGraphicsView::onFirstPointChange(QPoint newPoint)
 {
-   firstPoint = std::make_shared<QPointF>(newPoint.x(), newPoint.y());
+   firstPoint = newPoint;
 }
 
 void MyGraphicsView::onSecondPointChange(QPoint newPoint)
 {
-   secondPoint = std::make_shared<QPointF>(newPoint.x(), newPoint.y());
+   secondPoint = newPoint;
 }
 
 void MyGraphicsView::onWidthChange(int newWidth)

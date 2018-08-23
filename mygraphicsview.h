@@ -73,10 +73,10 @@ private:
      * Draw line, rectangle, sector
      */
     /* Starting point of a line or the centerline of a rectangle. or center of a sector. */
-    std::shared_ptr<QPointF> firstPoint = nullptr;
+    QPoint firstPoint;
     /* End point of a line or the centerline of a rectangle or an arbitrary point at the
      * centerline of a ring. */
-    std::shared_ptr<QPointF> secondPoint = nullptr;
+    QPoint secondPoint;
     /* Radius of ring */
     int radius = 50;
     /* Width of a rectangle or a ring */
