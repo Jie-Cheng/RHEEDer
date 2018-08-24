@@ -9,9 +9,9 @@ SelectionControl::SelectionControl(QWidget *parent) :
     ui->setupUi(this);
     setLayout(ui->horizontalLayout);
     // These are the default values
-    ui->lineEdit_5->setText("40");
-    ui->lineEdit_7->setText("0");
-    ui->lineEdit_8->setText("60");
+    ui->horizontalSlider->setValue(40); // width
+    ui->horizontalSlider_3->setValue(0); // theta
+    ui->horizontalSlider_4->setValue(60); // phi
     setViewMode(MyGraphicsView::ViewMode::Normal);
     auto getFirstPoint = [&](){
         emit firstPointChanged(QPoint(ui->lineEdit->text().toInt(),
@@ -25,17 +25,17 @@ SelectionControl::SelectionControl(QWidget *parent) :
     };
     connect(ui->lineEdit_3, &QLineEdit::textEdited, getSecondPoint);
     connect(ui->lineEdit_4, &QLineEdit::textEdited, getSecondPoint);
-    connect(ui->lineEdit_5, &QLineEdit::textEdited, [&](){
-        emit widthChanged(ui->lineEdit_5->text().toInt());
+    connect(ui->horizontalSlider, &QAbstractSlider::valueChanged, [&](){
+        emit widthChanged(ui->horizontalSlider->value());
     });
-    connect(ui->lineEdit_6, &QLineEdit::textEdited, [&](){
-        emit radiusChanged(ui->lineEdit_6->text().toInt());
+    connect(ui->horizontalSlider_2, &QAbstractSlider::valueChanged, [&](){
+        emit radiusChanged(ui->horizontalSlider_2->value());
     });
-    connect(ui->lineEdit_7, &QLineEdit::textEdited, [&](){
-        emit thetaChanged(ui->lineEdit_7->text().toInt());
+    connect(ui->horizontalSlider_3, &QAbstractSlider::valueChanged, [&](){
+        emit thetaChanged(ui->horizontalSlider_3->value());
     });
-    connect(ui->lineEdit_8, &QLineEdit::textEdited, [&](){
-        emit phiChanged(ui->lineEdit_8->text().toInt());
+    connect(ui->horizontalSlider_4, &QAbstractSlider::valueChanged, [&](){
+        emit phiChanged(ui->horizontalSlider_4->value());
     });
 }
 
@@ -51,37 +51,37 @@ void SelectionControl::setViewMode(MyGraphicsView::ViewMode mode)
         ui->lineEdit_2->setEnabled(false);
         ui->lineEdit_3->setEnabled(false);
         ui->lineEdit_4->setEnabled(false);
-        ui->lineEdit_5->setEnabled(false);
-        ui->lineEdit_6->setEnabled(false);
-        ui->lineEdit_7->setEnabled(false);
-        ui->lineEdit_8->setEnabled(false);
+        ui->horizontalSlider->setEnabled(false);
+        ui->horizontalSlider_2->setEnabled(false);
+        ui->horizontalSlider_3->setEnabled(false);
+        ui->horizontalSlider_4->setEnabled(false);
     } else if (mode == MyGraphicsView::ViewMode::Line) {
         ui->lineEdit->setEnabled(true);
         ui->lineEdit_2->setEnabled(true);
         ui->lineEdit_3->setEnabled(true);
         ui->lineEdit_4->setEnabled(true);
-        ui->lineEdit_5->setEnabled(false);
-        ui->lineEdit_6->setEnabled(false);
-        ui->lineEdit_7->setEnabled(false);
-        ui->lineEdit_8->setEnabled(false);
+        ui->horizontalSlider->setEnabled(false);
+        ui->horizontalSlider_2->setEnabled(false);
+        ui->horizontalSlider_3->setEnabled(false);
+        ui->horizontalSlider_4->setEnabled(false);
     } else if (mode == MyGraphicsView::ViewMode::Rectangle) {
         ui->lineEdit->setEnabled(true);
         ui->lineEdit_2->setEnabled(true);
         ui->lineEdit_3->setEnabled(true);
         ui->lineEdit_4->setEnabled(true);
-        ui->lineEdit_5->setEnabled(true);
-        ui->lineEdit_6->setEnabled(false);
-        ui->lineEdit_7->setEnabled(false);
-        ui->lineEdit_8->setEnabled(false);
+        ui->horizontalSlider->setEnabled(true);
+        ui->horizontalSlider_2->setEnabled(false);
+        ui->horizontalSlider_3->setEnabled(false);
+        ui->horizontalSlider_4->setEnabled(false);
     } else if (mode == MyGraphicsView::ViewMode::Sector) {
         ui->lineEdit->setEnabled(true);
         ui->lineEdit_2->setEnabled(true);
         ui->lineEdit_3->setEnabled(false);
         ui->lineEdit_4->setEnabled(false);
-        ui->lineEdit_5->setEnabled(true);
-        ui->lineEdit_6->setEnabled(true);
-        ui->lineEdit_7->setEnabled(true);
-        ui->lineEdit_8->setEnabled(true);
+        ui->horizontalSlider->setEnabled(true);
+        ui->horizontalSlider_2->setEnabled(true);
+        ui->horizontalSlider_3->setEnabled(true);
+        ui->horizontalSlider_4->setEnabled(true);
     }
 }
 
@@ -99,5 +99,10 @@ void SelectionControl::onSecondPointChange(QPoint newPoint)
 
 void SelectionControl::onRadiusChange(int newRadius)
 {
-    ui->lineEdit_6->setText(QString::number(newRadius));
+    ui->horizontalSlider_2->setValue(newRadius);
+}
+
+void SelectionControl::adjustRadiusRange(int maxRadius)
+{
+    ui->horizontalSlider_2->setMaximum(maxRadius);
 }

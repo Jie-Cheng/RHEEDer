@@ -32,6 +32,8 @@ void MyGraphicsView::setImage(const QImage& newImage)
     auto scene = new QGraphicsScene;
     scene->addItem(pixmapItem);
     setScene(scene);
+    itemToDraw = nullptr;
+    setViewMode(ViewMode::Normal);
     show();
 }
 

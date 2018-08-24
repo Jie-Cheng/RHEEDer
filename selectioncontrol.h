@@ -21,6 +21,7 @@ public slots:
     void onFirstPointChange(QPoint);
     void onSecondPointChange(QPoint);
     void onRadiusChange(int);
+    void adjustRadiusRange(int);
 
 signals:
     void firstPointChanged(QPoint);

@@ -72,6 +72,7 @@ bool MainWindow::loadFile(const QString &fileName)
     tree->setFileName(fileName);
     file = QFileInfo(fileName);
     onPixelUnderCursorChanged(QPoint());
+    selection->adjustRadiusRange(std::min(newImage.width(), newImage.height()) / 2);
     return true;
 }
 
