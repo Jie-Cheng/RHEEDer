@@ -97,6 +97,7 @@ signals:
     void zoomed();
     void firstPointChanged(QPoint);
     void secondPointChanged(QPoint);
+    void radiusChanged(int);
 };
 
 #endif // MYGRAPHICSVIEW_H

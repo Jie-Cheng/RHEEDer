@@ -74,18 +74,29 @@ void MyGraphicsView::mouseMoveEvent(QMouseEvent *event)
         panStart = event->pos();
     }
     emit pixelUnderCursorChanged(targetScenePos.toPoint());
-
+    // Only draw when two endpoints are bounded by the image.
+    // Note this does not guarantee itemToDraw is bounded.
     if (event->buttons() == Qt::LeftButton && pixmapItem &&
             pixmapItem->boundingRect().contains(firstPoint) &&
                 pixmapItem->boundingRect().contains(targetScenePos)) {
         if (mode == ViewMode::Line) {
-            drawLine(firstPoint, targetScenePos.toPoint());
+            secondPoint = targetScenePos.toPoint();
+            drawLine(firstPoint, secondPoint);
+            emit secondPointChanged(secondPoint);
         } else if (mode == ViewMode::Rectangle) {
-            drawRectangle(firstPoint, targetScenePos.toPoint(), width);
+            secondPoint = targetScenePos.toPoint();
+            drawRectangle(firstPoint, secondPoint, width);
+            emit secondPointChanged(secondPoint);
         } else if (mode == ViewMode::Sector) {
             double r = sqrt(qPow(targetScenePos.x() - firstPoint.x(), 2) +
                             qPow(targetScenePos.y() - firstPoint.y(), 2));
-            drawSector(firstPoint, static_cast<int>(r), width, theta, phi);
+            // Make sure the entire circle is bounded
+            if (pixmapItem->boundingRect().contains(QPointF(firstPoint.x()-r, firstPoint.y()-r)) &&
+                    pixmapItem->boundingRect().contains(QPointF(firstPoint.x()+r, firstPoint.y()+r))) {
+                radius = static_cast<int>(r);
+                drawSector(firstPoint, static_cast<int>(radius), width, theta, phi);
+                emit radiusChanged(radius);
+            }
         }
     }
 }
@@ -128,9 +139,6 @@ void MyGraphicsView::mouseReleaseEvent(QMouseEvent *event)
         setCursor(Qt::ArrowCursor);
         event->accept();
         return;
-    } else if (mode == ViewMode::Line || mode == ViewMode::Rectangle || mode == ViewMode::Sector) {
-        secondPoint = targetScenePos.toPoint();
-        emit secondPointChanged(secondPoint);
     }
     event->ignore();
 }

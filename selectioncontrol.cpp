@@ -8,8 +8,8 @@ SelectionControl::SelectionControl(QWidget *parent) :
 {
     ui->setupUi(this);
     setLayout(ui->horizontalLayout);
+    // These are the default values
     ui->lineEdit_5->setText("40");
-    ui->lineEdit_6->setText("200");
     ui->lineEdit_7->setText("0");
     ui->lineEdit_8->setText("60");
     setViewMode(MyGraphicsView::ViewMode::Normal);
@@ -95,4 +95,9 @@ void SelectionControl::onSecondPointChange(QPoint newPoint)
 {
     ui->lineEdit_3->setText(QString::number(newPoint.x()));
     ui->lineEdit_4->setText(QString::number(newPoint.x()));
+}
+
+void SelectionControl::onRadiusChange(int newRadius)
+{
+    ui->lineEdit_6->setText(QString::number(newRadius));
 }

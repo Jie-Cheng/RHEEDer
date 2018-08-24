@@ -42,6 +42,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(tree, &MyTreeView::fileDoubleClicked, this, &MainWindow::loadFile);
     connect(view, &MyGraphicsView::firstPointChanged, selection, &SelectionControl::onFirstPointChange);
     connect(view, &MyGraphicsView::secondPointChanged, selection, &SelectionControl::onSecondPointChange);
+    connect(view, &MyGraphicsView::radiusChanged, selection, &SelectionControl::onRadiusChange);
     connect(selection, &SelectionControl::firstPointChanged, view, &MyGraphicsView::onFirstPointChange);
     connect(selection, &SelectionControl::secondPointChanged, view, &MyGraphicsView::onSecondPointChange);
     connect(selection, &SelectionControl::widthChanged, view, &MyGraphicsView::onWidthChange);
@@ -210,6 +211,10 @@ void MainWindow::updateActions()
     drawRectangleAct->setChecked(false);
     drawSectorAct->setEnabled(view && !view->isImageNull());
     drawSectorAct->setChecked(false);
+    if (view)
+        view->setViewMode(MyGraphicsView::ViewMode::Normal);
+    if (selection)
+        selection->setViewMode(MyGraphicsView::ViewMode::Normal);
 }
 
 void MainWindow::changeWorkingDirectory()
