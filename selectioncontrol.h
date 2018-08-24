@@ -15,9 +15,19 @@ class SelectionControl : public QWidget
 public:
     explicit SelectionControl(QWidget *parent = nullptr);
     ~SelectionControl();
+    void setViewMode(MyGraphicsView::ViewMode);
 
 public slots:
-    void onViewModeChange(MyGraphicsView::ViewMode);
+    void onFirstPointChange(QPoint);
+    void onSecondPointChange(QPoint);
+
+signals:
+    void firstPointChanged(QPoint);
+    void secondPointChanged(QPoint);
+    void widthChanged(int);
+    void radiusChanged(int);
+    void thetaChanged(int);
+    void phiChanged(int);
 
 private:
     Ui::SelectionControl *ui;

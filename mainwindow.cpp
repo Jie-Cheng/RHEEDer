@@ -40,6 +40,14 @@ MainWindow::MainWindow(QWidget *parent) :
     setWindowTitle("RHEEDer");
     connect(view, &MyGraphicsView::pixelUnderCursorChanged, this, &MainWindow::onPixelUnderCursorChanged);
     connect(tree, &MyTreeView::fileDoubleClicked, this, &MainWindow::loadFile);
+    connect(view, &MyGraphicsView::firstPointChanged, selection, &SelectionControl::onFirstPointChange);
+    connect(view, &MyGraphicsView::secondPointChanged, selection, &SelectionControl::onSecondPointChange);
+    connect(selection, &SelectionControl::firstPointChanged, view, &MyGraphicsView::onFirstPointChange);
+    connect(selection, &SelectionControl::secondPointChanged, view, &MyGraphicsView::onSecondPointChange);
+    connect(selection, &SelectionControl::widthChanged, view, &MyGraphicsView::onWidthChange);
+    connect(selection, &SelectionControl::radiusChanged, view, &MyGraphicsView::onRadiusChange);
+    connect(selection, &SelectionControl::thetaChanged, view, &MyGraphicsView::onThetaChange);
+    connect(selection, &SelectionControl::phiChanged, view, &MyGraphicsView::onPhiChange);
 }
 
 MainWindow::~MainWindow()
@@ -61,6 +69,8 @@ bool MainWindow::loadFile(const QString &fileName)
     view->setImage(newImage);
     updateActions();
     tree->setFileName(fileName);
+    file = QFileInfo(fileName);
+    onPixelUnderCursorChanged(QPoint());
     return true;
 }
 
@@ -113,6 +123,7 @@ void MainWindow::createActions()
         updateActions();
         translateAct->setChecked(state);
         view->setViewMode(state ? MyGraphicsView::ViewMode::Pan : MyGraphicsView::ViewMode::Normal);
+        selection->setViewMode(MyGraphicsView::ViewMode::Normal);
     });
 
     QMenu *toolMenu = menuBar()->addMenu(tr("&Tools"));
@@ -123,6 +134,7 @@ void MainWindow::createActions()
         updateActions();
         drawLineAct->setChecked(state);
         view->setViewMode(state ? MyGraphicsView::ViewMode::Line : MyGraphicsView::ViewMode::Normal);
+        selection->setViewMode(state ? MyGraphicsView::ViewMode::Line : MyGraphicsView::ViewMode::Normal);
     });
 
     drawRectangleAct = toolMenu->addAction(tr("Select &Rectangle"));
@@ -132,6 +144,7 @@ void MainWindow::createActions()
         updateActions();
         drawRectangleAct->setChecked(state);
         view->setViewMode(state ? MyGraphicsView::ViewMode::Rectangle : MyGraphicsView::ViewMode::Normal);
+        selection->setViewMode(state ? MyGraphicsView::ViewMode::Rectangle : MyGraphicsView::ViewMode::Normal);
     });
 
     drawSectorAct = toolMenu->addAction(tr("Select &Sector"));
@@ -141,6 +154,7 @@ void MainWindow::createActions()
         updateActions();
         drawSectorAct->setChecked(state);
         view->setViewMode(state ? MyGraphicsView::ViewMode::Sector : MyGraphicsView::ViewMode::Normal);
+        selection->setViewMode(state ? MyGraphicsView::ViewMode::Sector : MyGraphicsView::ViewMode::Normal);
     });
 
     QMenu *helpMenu = menuBar()->addMenu(tr("&Help"));
@@ -216,7 +230,6 @@ void MainWindow::open()
         return;
     }
     loadFile(fileName);
-    file = QFileInfo(fileName);
 }
 
 void MainWindow::saveAs()

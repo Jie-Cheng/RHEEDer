@@ -78,17 +78,19 @@ private:
      * centerline of a ring. */
     QPoint secondPoint;
     /* Radius of ring */
-    int radius = 50;
+    int radius = 200;
     /* Width of a rectangle or a ring */
-    int width = 20;
+    int width = 40;
     /* angle between the centerline of the section and the vertical direction,
         in degree. By default the centerline is pointing to the south */
-    double theta = 0;
+    int theta = 0;
     /* the angle of the whole sector (not half), in degree */
-    double phi = 30;
+    int phi = 60;
     std::shared_ptr<QGraphicsItem> itemToDraw = nullptr;
 
-    static QPainterPath createRing(QPointF center, double radius, double width, double theta, double phi);
+    void drawLine(QPoint first, QPoint second);
+    void drawRectangle(QPoint first, QPoint second, int width);
+    void drawSector(QPoint center, int radius, int width, int theta, int phi);
 
 signals:
     void pixelUnderCursorChanged(QPoint value);
